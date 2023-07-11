@@ -2,22 +2,12 @@ namespace dotNET7.Services.CharacterService
 {
     public class CharacterService : ICharacterService
     {
-        private static List<Character> characters = new() {
-            new Character 
-            {
-                Id = 1
-            },
-            new Character 
-            {
-                Id = 2,
-                Name = "Sam"
-            }
-        };
-
         private readonly IMapper _mapper;
+        private readonly RPGContext _context;
 
-        public CharacterService(IMapper mapper)
+        public CharacterService(IMapper mapper, RPGContext context)
         {
+            _context = context;
             _mapper = mapper;
         }
 
@@ -28,10 +18,10 @@ namespace dotNET7.Services.CharacterService
             try 
             {
                 Character newCharacter = _mapper.Map<Character>(request);
-                newCharacter.Id = characters.Max(c => c.Id) + 1;
-                characters.Add(newCharacter);
-                
-                response.Data = GetFoundCharacters();
+                _context.Characters.Add(newCharacter);
+                await _context.SaveChangesAsync();
+
+                response.Data = await GetFoundCharacters();
             }
             catch (Exception e) 
             {
@@ -48,12 +38,13 @@ namespace dotNET7.Services.CharacterService
 
             try 
             {
-                Character? character = characters.FirstOrDefault(c => c.Id == id);
-                if (character is null)
+                Character? dbCharacter = await _context.Characters.FirstOrDefaultAsync(c => c.Id == id);
+                if (dbCharacter is null)
                     throw new Exception($"Character with id '{id}' not found.");
 
-                characters.Remove(character);
-                response.Data = GetFoundCharacters();
+                _context.Characters.Remove(dbCharacter);
+                await _context.SaveChangesAsync();
+                response.Data = await GetFoundCharacters();
             }
             catch (Exception e)
             {
@@ -70,7 +61,7 @@ namespace dotNET7.Services.CharacterService
 
             try
             {
-                List<GetCharacterDto> foundCharacters = GetFoundCharacters();
+                List<GetCharacterDto> foundCharacters = await GetFoundCharacters();
                 if (foundCharacters is null)
                     throw new Exception($"No characters found..");
 
@@ -91,11 +82,11 @@ namespace dotNET7.Services.CharacterService
 
             try 
             {
-                Character? character = characters.FirstOrDefault(c => c.Id == id);
-                if (character is null) 
+                Character? dbCharacter = await _context.Characters.FirstOrDefaultAsync(c => c.Id == id);
+                if (dbCharacter is null) 
                     throw new Exception($"Character with Id '{id}' not found.");
 
-                response.Data = _mapper.Map<GetCharacterDto>(character);
+                response.Data = _mapper.Map<GetCharacterDto>(dbCharacter);
             }
             catch (Exception e)
             {
@@ -112,11 +103,13 @@ namespace dotNET7.Services.CharacterService
 
             try 
             {
-                Character? character = characters.FirstOrDefault(c => c.Id == request.Id);
+                Character? character = 
+                    await _context.Characters.FirstOrDefaultAsync(c => c.Id == request.Id);
                 if (character is null) 
                     throw new Exception($"Character with Id '{request.Id}' not found.");
 
                 _mapper.Map(request, character);
+                await _context.SaveChangesAsync();
                 response.Data = _mapper.Map<GetCharacterDto>(character);
             }
             catch (Exception e) 
@@ -128,6 +121,11 @@ namespace dotNET7.Services.CharacterService
             return response;
         }
 
-        private List<GetCharacterDto> GetFoundCharacters() => characters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+        private async Task<List<GetCharacterDto>> GetFoundCharacters() 
+        {
+            List<Character> dbCharacters = await _context.Characters.ToListAsync();
+            List<GetCharacterDto> returning = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+            return returning;
+        }
     }
 }
