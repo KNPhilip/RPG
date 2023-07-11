@@ -19,7 +19,7 @@ namespace dotNET7.Services.AuthService
             {
                 User? user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
-                if (user is null || BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+                if (user is null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
                     throw new Exception("Incorrect username or password.");
                 
                 response.Data = CreateJWT(user);

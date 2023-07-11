@@ -7,6 +7,5 @@ namespace dotNET7.Services.CharacterService
         Task<ServiceResponseDto<List<GetCharacterDto>>> AddCharacterAsync(AddCharacterDto request);
         Task<ServiceResponseDto<GetCharacterDto>> UpdateCharacterAsync(UpdateCharacterDto request);
         Task<ServiceResponseDto<List<GetCharacterDto>>> DeleteCharacterAsync(int id);
-        Task<ServiceResponseDto<List<GetCharacterDto>>> GetCharactersForAuthenticatedUserAsync(int userId);
     }
 }

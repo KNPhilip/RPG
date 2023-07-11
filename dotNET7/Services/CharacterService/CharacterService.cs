@@ -4,24 +4,31 @@ namespace dotNET7.Services.CharacterService
     {
         private readonly IMapper _mapper;
         private readonly RPGContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CharacterService(IMapper mapper, RPGContext context)
+        public CharacterService(IMapper mapper, RPGContext context, IHttpContextAccessor httpContextAccessor)
         {
+            _httpContextAccessor = httpContextAccessor;
             _context = context;
             _mapper = mapper;
         }
 
         public async Task<ServiceResponseDto<List<GetCharacterDto>>> AddCharacterAsync(AddCharacterDto request)
         {
-            var response = new ServiceResponseDto<List<GetCharacterDto>>();
+            ServiceResponseDto<List<GetCharacterDto>> response = new();
 
             try 
             {
                 Character newCharacter = _mapper.Map<Character>(request);
                 _context.Characters.Add(newCharacter);
+                newCharacter.User = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == GetUserId());
                 await _context.SaveChangesAsync();
 
-                response.Data = await GetFoundCharacters();
+                response.Data = await _context.Characters
+                    .Where(c => c.User!.Id == GetUserId())
+                    .Select(c => _mapper.Map<GetCharacterDto>(c))
+                    .ToListAsync();
             }
             catch (Exception e) 
             {
@@ -34,17 +41,20 @@ namespace dotNET7.Services.CharacterService
 
         public async Task<ServiceResponseDto<List<GetCharacterDto>>> DeleteCharacterAsync(int id)
         {
-            var response = new ServiceResponseDto<List<GetCharacterDto>>();
+            ServiceResponseDto<List<GetCharacterDto>> response = new();
 
             try 
             {
-                Character? dbCharacter = await _context.Characters.FirstOrDefaultAsync(c => c.Id == id);
+                Character? dbCharacter = await _context.Characters
+                    .FirstOrDefaultAsync(c => c.Id == id && c.User!.Id == GetUserId());
                 if (dbCharacter is null)
-                    throw new Exception($"Character with id '{id}' not found.");
+                    throw new Exception($"You don't have a character with an id of '{id}'");
 
                 _context.Characters.Remove(dbCharacter);
                 await _context.SaveChangesAsync();
-                response.Data = await GetFoundCharacters();
+                response.Data = await _context.Characters
+                    .Where(c => c.User!.Id == GetUserId())
+                    .Select(c => _mapper.Map<GetCharacterDto>(c)).ToListAsync();
             }
             catch (Exception e)
             {
@@ -57,56 +67,15 @@ namespace dotNET7.Services.CharacterService
 
         public async Task<ServiceResponseDto<List<GetCharacterDto>>> GetAllCharactersAsync()
         {
-            var response = new ServiceResponseDto<List<GetCharacterDto>>();
+            ServiceResponseDto<List<GetCharacterDto>> response = new();
 
             try
             {
-                List<GetCharacterDto> foundCharacters = await GetFoundCharacters();
-                if (foundCharacters is null)
-                    throw new Exception($"No characters found..");
-
-                response.Data = foundCharacters;
-            }
-            catch (Exception e)
-            {
-                response.Message = $"Something went wrong: {e.Message}";
-                response.Success = false;
-            }
-            
-            return response;
-        }
-
-        public async Task<ServiceResponseDto<GetCharacterDto>> GetCharacterByIdAsync(int id)
-        {
-            var response = new ServiceResponseDto<GetCharacterDto>();
-
-            try 
-            {
-                Character? dbCharacter = await _context.Characters.FirstOrDefaultAsync(c => c.Id == id);
-                if (dbCharacter is null) 
-                    throw new Exception($"Character with Id '{id}' not found.");
-
-                response.Data = _mapper.Map<GetCharacterDto>(dbCharacter);
-            }
-            catch (Exception e)
-            {
-                response.Message = $"Something went wrong: {e.Message}";
-                response.Success = false;
-            }
-
-            return response;
-        }
-
-        public async Task<ServiceResponseDto<List<GetCharacterDto>>> GetCharactersForAuthenticatedUserAsync(int userId)
-        {
-            var response = new ServiceResponseDto<List<GetCharacterDto>>();
-
-            try
-            {
-                List<Character> dbCharacters = await
-                    _context.Characters.Where(c => c.User!.Id == userId).ToListAsync();
-                if (dbCharacters is null)
-                    throw new Exception($"No characters found..");
+                List<Character> dbCharacters = await _context.Characters
+                    .Where(c => c.User!.Id == GetUserId())
+                    .ToListAsync();
+                if (dbCharacters is null || dbCharacters.Count == 0)
+                    throw new Exception("You don't have any characters..");
 
                 response.Data = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
             }
@@ -119,16 +88,38 @@ namespace dotNET7.Services.CharacterService
             return response;
         }
 
+        public async Task<ServiceResponseDto<GetCharacterDto>> GetCharacterByIdAsync(int id)
+        {
+            ServiceResponseDto<GetCharacterDto> response = new();
+
+            try 
+            {
+                Character? dbCharacter = await _context.Characters
+                    .FirstOrDefaultAsync(c => c.Id == id && c.User!.Id == GetUserId());
+                if (dbCharacter is null) 
+                    throw new Exception($"You don't have a character with an id of '{id}'");
+
+                response.Data = _mapper.Map<GetCharacterDto>(dbCharacter);
+            }
+            catch (Exception e)
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+
+            return response;
+        }
+
         public async Task<ServiceResponseDto<GetCharacterDto>> UpdateCharacterAsync(UpdateCharacterDto request)
         {
-            var response = new ServiceResponseDto<GetCharacterDto>();
+            ServiceResponseDto<GetCharacterDto> response = new();
 
             try 
             {
                 Character? character = 
-                    await _context.Characters.FirstOrDefaultAsync(c => c.Id == request.Id);
+                    await _context.Characters.FirstOrDefaultAsync(c => c.Id == request.Id && c.User!.Id == GetUserId());
                 if (character is null) 
-                    throw new Exception($"Character with Id '{request.Id}' not found.");
+                    throw new Exception($"You don't have a character with an id of '{request.Id}'");
 
                 _mapper.Map(request, character);
                 await _context.SaveChangesAsync();
@@ -143,11 +134,7 @@ namespace dotNET7.Services.CharacterService
             return response;
         }
 
-        private async Task<List<GetCharacterDto>> GetFoundCharacters() 
-        {
-            List<Character> dbCharacters = await _context.Characters.ToListAsync();
-            List<GetCharacterDto> returning = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
-            return returning;
-        }
+        private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext!.User.
+            FindFirstValue(ClaimTypes.NameIdentifier)!);
     }
 }

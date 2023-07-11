@@ -12,23 +12,10 @@ namespace dotNET7.Controllers
             _characterService = characterService;
         }
 
-        [HttpGet, AllowAnonymous]
+        [HttpGet]
         public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> GetAllCharacters()
         {
-            int id = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)!.Value);
-
             var response = await _characterService.GetAllCharactersAsync();
-            if (response.Data is null)
-                return NotFound(response);
-            return response.Success ? Ok(response) : BadRequest(response);
-        }
-
-        [HttpGet("my-characters"), AllowAnonymous]
-        public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> GetCharactersForAuthenticatedUser()
-        {
-            int id = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)!.Value);
-
-            var response = await _characterService.GetCharactersForAuthenticatedUserAsync(id);
             if (response.Data is null)
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
