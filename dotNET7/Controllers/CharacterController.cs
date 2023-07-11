@@ -1,4 +1,4 @@
-namespace RPG.Controllers
+namespace dotNET7.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -12,21 +12,39 @@ namespace RPG.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ServiceResponseDto<List<Character>>>> GetAllCharacters()
+        public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> GetAllCharacters()
         {
-            return Ok(await _characterService.GetAllCharactersAsync());
+            var response = await _characterService.GetAllCharactersAsync();
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ServiceResponseDto<Character>>> GetCharacterById(int id)
+        public async Task<ActionResult<ServiceResponseDto<GetCharacterDto>>> GetCharacterById(int id)
         {
-            return Ok(await _characterService.GetCharacterByIdAsync(id));
+            var response = await _characterService.GetCharacterByIdAsync(id);
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ServiceResponseDto<List<Character>>>> AddCharacter(Character request) 
+        public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> AddCharacter(AddCharacterDto request) 
         {
-            return Ok(await _characterService.AddCharacterAsync(request));
+            var response = await _characterService.AddCharacterAsync(request);
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<ServiceResponseDto<GetCharacterDto>>> UpdateCharacter(UpdateCharacterDto request) 
+        {
+            var response = await _characterService.UpdateCharacterAsync(request);
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
     }
 }

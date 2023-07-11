@@ -1,4 +1,4 @@
-namespace RPG.Models
+namespace dotNET7.Models
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum RpgClass

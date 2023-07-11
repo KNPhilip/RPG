@@ -1,9 +1,10 @@
-namespace RPG.Services.CharacterService
+namespace dotNET7.Services.CharacterService
 {
     public interface ICharacterService
     {
-        Task<ServiceResponseDto<List<Character>>> GetAllCharactersAsync();
-        Task<ServiceResponseDto<Character>> GetCharacterByIdAsync(int id);
-        Task<ServiceResponseDto<List<Character>>> AddCharacterAsync(Character request);
+        Task<ServiceResponseDto<GetCharacterDto>> GetCharacterByIdAsync(int id);
+        Task<ServiceResponseDto<List<GetCharacterDto>>> GetAllCharactersAsync();
+        Task<ServiceResponseDto<List<GetCharacterDto>>> AddCharacterAsync(AddCharacterDto request);
+        Task<ServiceResponseDto<GetCharacterDto>> UpdateCharacterAsync(UpdateCharacterDto request);
     }
 }

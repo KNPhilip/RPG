@@ -1,4 +1,4 @@
-namespace RPG.Dtos
+namespace dotNET7.Dtos
 {
     public class ServiceResponseDto<T>
     {

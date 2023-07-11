@@ -1,4 +1,4 @@
-namespace RPG;
+namespace dotNET7;
 
 public class WeatherForecast
 {

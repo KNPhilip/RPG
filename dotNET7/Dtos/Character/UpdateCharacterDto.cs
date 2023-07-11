@@ -1,6 +1,6 @@
-namespace dotNET7.Models
+namespace dotNET7.Dtos.Character
 {
-    public class Character
+    public class UpdateCharacterDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = "Frodo";

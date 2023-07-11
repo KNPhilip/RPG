@@ -1,4 +1,4 @@
-namespace RPG.Services.CharacterService
+namespace dotNET7.Services.CharacterService
 {
     public class CharacterService : ICharacterService
     {
@@ -14,30 +14,95 @@ namespace RPG.Services.CharacterService
             }
         };
 
-        public async Task<ServiceResponseDto<List<Character>>> AddCharacterAsync(Character request)
+        private readonly IMapper _mapper;
+
+        public CharacterService(IMapper mapper)
         {
-            var response = new ServiceResponseDto<List<Character>>();
-            characters.Add(request);
-            response.Data = characters;
+            _mapper = mapper;
+        }
+
+        public async Task<ServiceResponseDto<List<GetCharacterDto>>> AddCharacterAsync(AddCharacterDto request)
+        {
+            var response = new ServiceResponseDto<List<GetCharacterDto>>();
+
+            try 
+            {
+                Character newCharacter = _mapper.Map<Character>(request);
+                newCharacter.Id = characters.Max(c => c.Id) + 1;
+                characters.Add(newCharacter);
+                
+                response.Data = characters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+            }
+            catch (Exception e) 
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+
             return response;
         }
 
-        public async Task<ServiceResponseDto<List<Character>>> GetAllCharactersAsync()
+        public async Task<ServiceResponseDto<List<GetCharacterDto>>> GetAllCharactersAsync()
         {
-            ServiceResponseDto<List<Character>> response = new()
+            var response = new ServiceResponseDto<List<GetCharacterDto>>();
+
+            try 
             {
-                Data = characters
-            };
+                List<GetCharacterDto> foundCharacters = characters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+                if (foundCharacters is null) 
+                    throw new Exception($"No characters found..");
+
+                response.Data = foundCharacters;
+            }
+            catch (Exception e)
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+            
             return response;
         }
 
-        public async Task<ServiceResponseDto<Character>> GetCharacterByIdAsync(int id)
+        public async Task<ServiceResponseDto<GetCharacterDto>> GetCharacterByIdAsync(int id)
         {
-            Character? character = characters.FirstOrDefault(c => c.Id == id);
-            ServiceResponseDto<Character> response = new()
+            var response = new ServiceResponseDto<GetCharacterDto>();
+
+            try 
             {
-                Data = character
-            };
+                Character? character = characters.FirstOrDefault(c => c.Id == id);
+                if (character is null) 
+                    throw new Exception($"Character with Id '{id}' not found.");
+
+                response.Data = _mapper.Map<GetCharacterDto>(character);
+            }
+            catch (Exception e)
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+
+            return response;
+        }
+
+        public async Task<ServiceResponseDto<GetCharacterDto>> UpdateCharacterAsync(UpdateCharacterDto request)
+        {
+            var response = new ServiceResponseDto<GetCharacterDto>();
+
+            try 
+            {
+                Character? character = characters.FirstOrDefault(c => c.Id == request.Id);
+                if (character is null) 
+                    throw new Exception($"Character with Id '{request.Id}' not found.");
+
+                _mapper.Map(request, character);
+                response.Data = _mapper.Map<GetCharacterDto>(character);
+            }
+            catch (Exception e) 
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+
             return response;
         }
     }
