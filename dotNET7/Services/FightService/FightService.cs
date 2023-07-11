@@ -9,6 +9,58 @@ namespace dotNET7.Services.FightService
             _context = context;
         }
 
+        public async Task<ServiceResponseDto<AttackResultDto>> SkillAttack(SkillAttackDto request)
+        {
+            ServiceResponseDto<AttackResultDto> response = new();
+            try 
+            {
+                Character? opponent = await _context.Characters
+                    .Include(c => c.Skills)
+                    .FirstOrDefaultAsync(c => c.Id == request.OpponentId);
+                if (opponent is null)
+                    throw new Exception("Opponent not found..");
+
+                Character? attacker = await _context.Characters
+                    .Include(c => c.Weapon)
+                    .FirstOrDefaultAsync(c => c.Id == request.AttackerId);
+                if (attacker is null)
+                    throw new Exception("Attacker not found..");
+
+                if (attacker.Skills is null)
+                    throw new Exception("Attacker's weapon not found..");
+
+                var skill = attacker.Skills.FirstOrDefault(s => s.Id == request.SkillId);
+                if (skill is null)
+                    throw new Exception($"{attacker.Name} doesn't know that skill..");
+
+                int damage = skill.Damage + (new Random().Next(attacker.Intelligence));
+                damage -= new Random().Next(opponent!.Defeats);
+
+                if (damage > 0)
+                    opponent.HitPoints += damage;
+
+                if (opponent.HitPoints <= 0)
+                    response.Message = $"{opponent.Name} has been defeated!";
+
+                await _context.SaveChangesAsync();
+
+                response.Data = new AttackResultDto {
+                    Attacker = attacker.Name,
+                    Opponent = opponent.Name,
+                    AttackerHP = attacker.HitPoints,
+                    OpponentHP = opponent.HitPoints,
+                    Damage = damage
+                };
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.Message = $"Something went wrong: {e.Message}";
+            }
+
+            return response;
+        }
+
         public async Task<ServiceResponseDto<AttackResultDto>> WeaponAttack(WeaponAttackDto request)
         {
             ServiceResponseDto<AttackResultDto> response = new();
