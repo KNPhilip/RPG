@@ -97,6 +97,28 @@ namespace dotNET7.Services.CharacterService
             return response;
         }
 
+        public async Task<ServiceResponseDto<List<GetCharacterDto>>> GetCharactersForAuthenticatedUserAsync(int userId)
+        {
+            var response = new ServiceResponseDto<List<GetCharacterDto>>();
+
+            try
+            {
+                List<Character> dbCharacters = await
+                    _context.Characters.Where(c => c.User!.Id == userId).ToListAsync();
+                if (dbCharacters is null)
+                    throw new Exception($"No characters found..");
+
+                response.Data = dbCharacters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+            }
+            catch (Exception e)
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+            
+            return response;
+        }
+
         public async Task<ServiceResponseDto<GetCharacterDto>> UpdateCharacterAsync(UpdateCharacterDto request)
         {
             var response = new ServiceResponseDto<GetCharacterDto>();
