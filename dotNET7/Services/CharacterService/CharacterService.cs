@@ -31,9 +31,31 @@ namespace dotNET7.Services.CharacterService
                 newCharacter.Id = characters.Max(c => c.Id) + 1;
                 characters.Add(newCharacter);
                 
-                response.Data = characters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
+                response.Data = GetFoundCharacters();
             }
             catch (Exception e) 
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+
+            return response;
+        }
+
+        public async Task<ServiceResponseDto<List<GetCharacterDto>>> DeleteCharacterAsync(int id)
+        {
+            var response = new ServiceResponseDto<List<GetCharacterDto>>();
+
+            try 
+            {
+                Character? character = characters.FirstOrDefault(c => c.Id == id);
+                if (character is null)
+                    throw new Exception($"Character with id '{id}' not found.");
+
+                characters.Remove(character);
+                response.Data = GetFoundCharacters();
+            }
+            catch (Exception e)
             {
                 response.Message = $"Something went wrong: {e.Message}";
                 response.Success = false;
@@ -46,10 +68,10 @@ namespace dotNET7.Services.CharacterService
         {
             var response = new ServiceResponseDto<List<GetCharacterDto>>();
 
-            try 
+            try
             {
-                List<GetCharacterDto> foundCharacters = characters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
-                if (foundCharacters is null) 
+                List<GetCharacterDto> foundCharacters = GetFoundCharacters();
+                if (foundCharacters is null)
                     throw new Exception($"No characters found..");
 
                 response.Data = foundCharacters;
@@ -105,5 +127,7 @@ namespace dotNET7.Services.CharacterService
 
             return response;
         }
+
+        private List<GetCharacterDto> GetFoundCharacters() => characters.Select(c => _mapper.Map<GetCharacterDto>(c)).ToList();
     }
 }

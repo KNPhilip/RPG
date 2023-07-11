@@ -46,5 +46,14 @@ namespace dotNET7.Controllers
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> DeleteCharacter(int id) 
+        {
+            var response = await _characterService.DeleteCharacterAsync(id);
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }
