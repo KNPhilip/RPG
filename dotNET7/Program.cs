@@ -3,6 +3,7 @@ global using Microsoft.AspNetCore.Mvc;
 global using dotNET7.Models;
 global using dotNET7.Dtos;
 global using dotNET7.Dtos.Character;
+global using dotNET7.Dtos.User;
 global using dotNET7.Services.CharacterService;
 global using AutoMapper;
 global using Microsoft.EntityFrameworkCore;
