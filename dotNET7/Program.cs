@@ -9,6 +9,10 @@ global using dotNET7.Services.AuthService;
 global using AutoMapper;
 global using Microsoft.EntityFrameworkCore;
 global using dotNET7.Data;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Security.Claims;
+global using Microsoft.IdentityModel.Tokens;
+global using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
