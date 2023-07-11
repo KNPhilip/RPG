@@ -1,5 +1,6 @@
 namespace dotNET7.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CharacterController : ControllerBase
