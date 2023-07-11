@@ -11,7 +11,24 @@ namespace dotNET7.Services.AuthService
 
         public async Task<ServiceResponseDto<string>> Login(string username, string password)
         {
-            throw new NotImplementedException();
+            ServiceResponseDto<string> response = new();
+
+            try 
+            {
+                User? user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
+                if (user is null || BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+                    throw new Exception("Incorrect username or password.");
+                
+                response.Data = "JWT";
+            }
+            catch (Exception e) 
+            {
+                response.Success = false;
+                response.Message = $"Something went wrong: {e.Message}";
+            }
+            
+            return response;
         }
 
         public async Task<ServiceResponseDto<int>> Register(UserDto request, string password)
@@ -21,10 +38,7 @@ namespace dotNET7.Services.AuthService
             try 
             {
                 if (await UserExists(request.Username)) 
-                {
-                    response.Success = false;
-                    response.Message = "User already exists.";
-                }
+                    throw new Exception("User already exists.");
 
                 User user = new()
                 {

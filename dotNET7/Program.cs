@@ -5,6 +5,7 @@ global using dotNET7.Dtos;
 global using dotNET7.Dtos.Character;
 global using dotNET7.Dtos.User;
 global using dotNET7.Services.CharacterService;
+global using dotNET7.Services.AuthService;
 global using AutoMapper;
 global using Microsoft.EntityFrameworkCore;
 global using dotNET7.Data;
@@ -21,6 +22,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<ICharacterService, CharacterService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
