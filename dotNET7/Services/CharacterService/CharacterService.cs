@@ -39,6 +39,37 @@ namespace dotNET7.Services.CharacterService
             return response;
         }
 
+        public async Task<ServiceResponseDto<GetCharacterDto>> AddCharacterSkill(AddCharacterSkillDto request)
+        {
+            ServiceResponseDto<GetCharacterDto> response = new();
+            try 
+            {
+                Character? dbCharacter = await _context.Characters
+                    .Include(c => c.Weapon)
+                    .Include(c => c.Skills)
+                    .FirstOrDefaultAsync(c => c.Id == request.CharacterId &&
+                    c.User!.Id == GetUserId());
+                if (dbCharacter is null)
+                    throw new Exception($"Character not found.");
+                
+                Skill? dbSkill = await _context.Skills
+                    .FirstOrDefaultAsync(s => s.Id == request.SkillId);
+                if (dbSkill is null)
+                    throw new Exception($"Skill not found.");
+
+                dbCharacter.Skills!.Add(dbSkill);
+                await _context.SaveChangesAsync();
+                response.Data = _mapper.Map<GetCharacterDto>(dbCharacter);
+            }
+            catch (Exception e)
+            {
+                response.Message = $"Something went wrong: {e.Message}";
+                response.Success = false;
+            }
+
+            return response;
+        }
+
         public async Task<ServiceResponseDto<List<GetCharacterDto>>> DeleteCharacterAsync(int id)
         {
             ServiceResponseDto<List<GetCharacterDto>> response = new();
@@ -72,6 +103,8 @@ namespace dotNET7.Services.CharacterService
             try
             {
                 List<Character> dbCharacters = await _context.Characters
+                    .Include(c => c.Weapon)
+                    .Include(c => c.Skills)
                     .Where(c => c.User!.Id == GetUserId())
                     .ToListAsync();
                 if (dbCharacters is null || dbCharacters.Count == 0)
@@ -95,6 +128,8 @@ namespace dotNET7.Services.CharacterService
             try 
             {
                 Character? dbCharacter = await _context.Characters
+                    .Include(c => c.Weapon)
+                    .Include(c => c.Skills)
                     .FirstOrDefaultAsync(c => c.Id == id && c.User!.Id == GetUserId());
                 if (dbCharacter is null) 
                     throw new Exception($"You don't have a character with an id of '{id}'");

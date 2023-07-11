@@ -56,5 +56,14 @@ namespace dotNET7.Controllers
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [HttpPost("skill")]
+        public async Task<ActionResult<ServiceResponseDto<GetCharacterDto>>> AddCharacterSkill(AddCharacterSkillDto request) 
+        {
+            ServiceResponseDto<GetCharacterDto> response = await _characterService.AddCharacterSkill(request);
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }
