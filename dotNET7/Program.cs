@@ -4,8 +4,12 @@ global using dotNET7.Models;
 global using dotNET7.Dtos;
 global using dotNET7.Dtos.Character;
 global using dotNET7.Dtos.User;
+global using dotNET7.Dtos.Weapon;
+global using dotNET7.Dtos.Skill;
 global using dotNET7.Services.CharacterService;
 global using dotNET7.Services.AuthService;
+global using dotNET7.Services.WeaponService;
+global using dotNET7.Services.SkillService;
 global using AutoMapper;
 global using Microsoft.EntityFrameworkCore;
 global using dotNET7.Data;
@@ -40,6 +44,7 @@ builder.Services.AddSwaggerGen(c => {
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IWeaponService, WeaponService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters()
