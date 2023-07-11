@@ -15,7 +15,7 @@ namespace dotNET7.Controllers
         [HttpGet]
         public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> GetAllCharacters()
         {
-            var response = await _characterService.GetAllCharactersAsync();
+            ServiceResponseDto<List<GetCharacterDto>> response = await _characterService.GetAllCharactersAsync();
             if (response.Data is null)
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
@@ -24,7 +24,7 @@ namespace dotNET7.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceResponseDto<GetCharacterDto>>> GetCharacterById(int id)
         {
-            var response = await _characterService.GetCharacterByIdAsync(id);
+            ServiceResponseDto<GetCharacterDto> response = await _characterService.GetCharacterByIdAsync(id);
             if (response.Data is null)
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
@@ -33,7 +33,7 @@ namespace dotNET7.Controllers
         [HttpPost]
         public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> AddCharacter(AddCharacterDto request) 
         {
-            var response = await _characterService.AddCharacterAsync(request);
+            ServiceResponseDto<List<GetCharacterDto>> response = await _characterService.AddCharacterAsync(request);
             if (response.Data is null)
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
@@ -42,7 +42,7 @@ namespace dotNET7.Controllers
         [HttpPut]
         public async Task<ActionResult<ServiceResponseDto<GetCharacterDto>>> UpdateCharacter(UpdateCharacterDto request) 
         {
-            var response = await _characterService.UpdateCharacterAsync(request);
+            ServiceResponseDto<GetCharacterDto> response = await _characterService.UpdateCharacterAsync(request);
             if (response.Data is null)
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
@@ -51,7 +51,7 @@ namespace dotNET7.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ServiceResponseDto<List<GetCharacterDto>>>> DeleteCharacter(int id) 
         {
-            var response = await _characterService.DeleteCharacterAsync(id);
+            ServiceResponseDto<List<GetCharacterDto>> response = await _characterService.DeleteCharacterAsync(id);
             if (response.Data is null)
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
