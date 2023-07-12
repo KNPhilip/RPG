@@ -4,5 +4,6 @@ namespace dotNET7.Services.FightService
     {
         Task<ServiceResponseDto<AttackResultDto>> WeaponAttack(WeaponAttackDto request);
         Task<ServiceResponseDto<AttackResultDto>> SkillAttack(SkillAttackDto request);
+        Task<ServiceResponseDto<FightResultDto>> Fight(FightRequestDto request);
     }
 }

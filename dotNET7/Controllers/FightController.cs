@@ -28,5 +28,14 @@ namespace dotNET7.Controllers
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<ServiceResponseDto<FightResultDto>>> FightAttack(FightRequestDto request) 
+        {
+            ServiceResponseDto<FightResultDto> response = await _fightService.Fight(request);
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }
