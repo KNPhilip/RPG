@@ -3,9 +3,11 @@ namespace dotNET7.Services.FightService
     public class FightService : IFightService
     {
         private readonly RPGContext _context;
+        private readonly IMapper _mapper;
         
-        public FightService(RPGContext context)
+        public FightService(RPGContext context, IMapper mapper)
         {
+            _mapper = mapper;
             _context = context;
         }
 
@@ -194,6 +196,28 @@ namespace dotNET7.Services.FightService
             if (damage > 0)
                 opponent.HitPoints += damage;
             return damage;
+        }
+
+        public async Task<ServiceResponseDto<List<HighscoreDto>>> GetHighScore()
+        {
+            ServiceResponseDto<List<HighscoreDto>> response = new();
+            try 
+            {
+                List<Character> characters = await _context.Characters
+                .Where(c => c.Fights > 0)
+                .OrderByDescending(c => c.Victories)
+                .ThenBy(c => c.Defeats)
+                .ToListAsync();
+
+                response.Data = characters.Select(c => _mapper.Map<HighscoreDto>(c)).ToList();
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.Message = $"Something went wrong: {e.Message}";
+            }
+
+            return response;
         }
     }
 }

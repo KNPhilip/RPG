@@ -37,5 +37,14 @@ namespace dotNET7.Controllers
                 return NotFound(response);
             return response.Success ? Ok(response) : BadRequest(response);
         }
+
+        [HttpGet]
+        public async Task<ActionResult<ServiceResponseDto<List<HighscoreDto>>>> GetHighScore() 
+        {
+            ServiceResponseDto<List<HighscoreDto>> response = await _fightService.GetHighScore();
+            if (response.Data is null)
+                return NotFound(response);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
     }
 }
